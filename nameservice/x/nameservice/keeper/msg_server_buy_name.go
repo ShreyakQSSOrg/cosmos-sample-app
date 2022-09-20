@@ -19,26 +19,29 @@ func (k msgServer) BuyName(goCtx context.Context, msg *types.MsgBuyName) (*types
 	minPrice := sdk.Coins{sdk.NewInt64Coin("GTOK", 10)}
 
 	// Convert price and bid strings to sdk.Coins
-	price, _ := sdk.ParseCoinsNormalized(whois.Price)
+
 	bid, _ := sdk.ParseCoinsNormalized(msg.Bid)
 
 	// Convert owner and buyer address strings to sdk.AccAddress
-	owner, _ := sdk.AccAddressFromBech32(whois.Owner)
 	buyer, _ := sdk.AccAddressFromBech32(msg.Creator)
 
 	// If a name is found in store
 	if isFound {
-		// If the current price is higher than the bid
-		if price.IsAllGT(bid) {
-			// Throw an error
-			return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "Bid is not high enough")
-		}
+		// // If the current price is higher than the bid
+		// if price.IsAllGT(bid) {
+		// 	// Throw an error
+		// 	return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "Bid is not high enough")
+		// }
 
-		// Otherwise (when the bid is higher), send tokens from the buyer to the owner
-		err := k.bankKeeper.SendCoins(ctx, buyer, owner, bid)
-		if err != nil {
-			return nil, err
-		}
+		// // Otherwise (when the bid is higher), send tokens from the buyer to the owner
+		// err := k.bankKeeper.SendCoins(ctx, buyer, owner, bid)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		// do not allow re-purchase
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Already purchased")
+
 	} else { // If the name is not found in the store
 		// If the minimum price is higher than the bid
 		if minPrice.IsAllGT(bid) {
