@@ -19,10 +19,11 @@ func (k msgServer) BuyName(goCtx context.Context, msg *types.MsgBuyName) (*types
 	minPrice := sdk.Coins{sdk.NewInt64Coin("GTOK", 10)}
 
 	// Convert price and bid strings to sdk.Coins
-
+	// price, _ := sdk.ParseCoinsNormalized(whois.Price)
 	bid, _ := sdk.ParseCoinsNormalized(msg.Bid)
 
 	// Convert owner and buyer address strings to sdk.AccAddress
+	// owner, _ := sdk.AccAddressFromBech32(whois.Owner)
 	buyer, _ := sdk.AccAddressFromBech32(msg.Creator)
 
 	// If a name is found in store
@@ -40,7 +41,7 @@ func (k msgServer) BuyName(goCtx context.Context, msg *types.MsgBuyName) (*types
 		// }
 
 		// do not allow re-purchase
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Already purchased")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "Already purchased")
 
 	} else { // If the name is not found in the store
 		// If the minimum price is higher than the bid
