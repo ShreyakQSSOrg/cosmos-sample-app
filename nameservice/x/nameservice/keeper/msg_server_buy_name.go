@@ -41,7 +41,7 @@ func (k msgServer) BuyName(goCtx context.Context, msg *types.MsgBuyName) (*types
 		// }
 
 		// do not allow re-purchase
-		return nil, sdkerrors.Wrap(sdkerrors.ErrInsufficientFunds, "Already purchased")
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "Already purchased")
 
 	} else { // If the name is not found in the store
 		// If the minimum price is higher than the bid
