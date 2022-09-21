@@ -11,6 +11,11 @@
 
 export type NameserviceMsgBuyNameResponse = object;
 
+export interface NameserviceMsgCreatePostResponse {
+  /** @format uint64 */
+  id?: string;
+}
+
 export type NameserviceMsgDeleteNameResponse = object;
 
 export type NameserviceMsgSetNameResponse = object;
@@ -19,6 +24,15 @@ export type NameserviceMsgSetNameResponse = object;
  * Params defines the parameters for the module.
  */
 export type NameserviceParams = object;
+
+export interface NameservicePost {
+  creator?: string;
+
+  /** @format uint64 */
+  id?: string;
+  title?: string;
+  body?: string;
+}
 
 export interface NameserviceQueryAllWhoisResponse {
   whois?: NameserviceWhois[];
@@ -45,6 +59,21 @@ export interface NameserviceQueryGetWhoisResponse {
 export interface NameserviceQueryParamsResponse {
   /** params holds all the parameters of this module. */
   params?: NameserviceParams;
+}
+
+export interface NameserviceQueryPostsResponse {
+  Post?: NameservicePost[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
 }
 
 export interface NameserviceWhois {
@@ -337,6 +366,32 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     this.request<NameserviceQueryParamsResponse, RpcStatus>({
       path: `/nameservice/nameservice/params`,
       method: "GET",
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryPosts
+   * @summary Queries a list of Posts items.
+   * @request GET:/nameservice/nameservice/posts
+   */
+  queryPosts = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<NameserviceQueryPostsResponse, RpcStatus>({
+      path: `/nameservice/nameservice/posts`,
+      method: "GET",
+      query: query,
       format: "json",
       ...params,
     });

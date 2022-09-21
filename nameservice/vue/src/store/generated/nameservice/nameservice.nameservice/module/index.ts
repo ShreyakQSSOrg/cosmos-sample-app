@@ -5,14 +5,16 @@ import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
 import { MsgDeleteName } from "./types/nameservice/tx";
-import { MsgBuyName } from "./types/nameservice/tx";
+import { MsgCreatePost } from "./types/nameservice/tx";
 import { MsgSetName } from "./types/nameservice/tx";
+import { MsgBuyName } from "./types/nameservice/tx";
 
 
 const types = [
   ["/nameservice.nameservice.MsgDeleteName", MsgDeleteName],
-  ["/nameservice.nameservice.MsgBuyName", MsgBuyName],
+  ["/nameservice.nameservice.MsgCreatePost", MsgCreatePost],
   ["/nameservice.nameservice.MsgSetName", MsgSetName],
+  ["/nameservice.nameservice.MsgBuyName", MsgBuyName],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
@@ -46,8 +48,9 @@ const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions =
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
     msgDeleteName: (data: MsgDeleteName): EncodeObject => ({ typeUrl: "/nameservice.nameservice.MsgDeleteName", value: MsgDeleteName.fromPartial( data ) }),
-    msgBuyName: (data: MsgBuyName): EncodeObject => ({ typeUrl: "/nameservice.nameservice.MsgBuyName", value: MsgBuyName.fromPartial( data ) }),
+    msgCreatePost: (data: MsgCreatePost): EncodeObject => ({ typeUrl: "/nameservice.nameservice.MsgCreatePost", value: MsgCreatePost.fromPartial( data ) }),
     msgSetName: (data: MsgSetName): EncodeObject => ({ typeUrl: "/nameservice.nameservice.MsgSetName", value: MsgSetName.fromPartial( data ) }),
+    msgBuyName: (data: MsgBuyName): EncodeObject => ({ typeUrl: "/nameservice.nameservice.MsgBuyName", value: MsgBuyName.fromPartial( data ) }),
     
   };
 };

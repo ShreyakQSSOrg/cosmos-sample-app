@@ -11,14 +11,15 @@ import (
 
 	abci "github.com/tendermint/tendermint/abci/types"
 
+	"nameservice/x/nameservice/client/cli"
+	"nameservice/x/nameservice/keeper"
+	"nameservice/x/nameservice/types"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"nameservice/x/nameservice/client/cli"
-	"nameservice/x/nameservice/keeper"
-	"nameservice/x/nameservice/types"
 )
 
 var (

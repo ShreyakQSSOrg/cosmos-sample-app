@@ -1,10 +1,11 @@
 import { txClient, queryClient, MissingWalletError , registry} from './module'
 
 import { Params } from "./module/types/nameservice/params"
+import { Post } from "./module/types/nameservice/post"
 import { Whois } from "./module/types/nameservice/whois"
 
 
-export { Params, Whois };
+export { Params, Post, Whois };
 
 async function initTxClient(vuexGetters) {
 	return await txClient(vuexGetters['common/wallet/signer'], {
@@ -45,9 +46,11 @@ const getDefaultState = () => {
 				Params: {},
 				Whois: {},
 				WhoisAll: {},
+				Posts: {},
 				
 				_Structure: {
 						Params: getStructure(Params.fromPartial({})),
+						Post: getStructure(Post.fromPartial({})),
 						Whois: getStructure(Whois.fromPartial({})),
 						
 		},
@@ -94,6 +97,12 @@ export default {
 						(<any> params).query=null
 					}
 			return state.WhoisAll[JSON.stringify(params)] ?? {}
+		},
+				getPosts: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.Posts[JSON.stringify(params)] ?? {}
 		},
 				
 		getTypeStructure: (state) => (type) => {
@@ -199,6 +208,32 @@ export default {
 		},
 		
 		
+		
+		
+		 		
+		
+		
+		async QueryPosts({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const queryClient=await initQueryClient(rootGetters)
+				let value= (await queryClient.queryPosts(query)).data
+				
+					
+				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
+					let next_values=(await queryClient.queryPosts({...query, 'pagination.key':(<any> value).pagination.next_key})).data
+					value = mergeResults(value, next_values);
+				}
+				commit('QUERY', { query: 'Posts', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryPosts', payload: { options: { all }, params: {...key},query }})
+				return getters['getPosts']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryPosts API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
 		async sendMsgDeleteName({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -214,18 +249,18 @@ export default {
 				}
 			}
 		},
-		async sendMsgBuyName({ rootGetters }, { value, fee = [], memo = '' }) {
+		async sendMsgCreatePost({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgBuyName(value)
+				const msg = await txClient.msgCreatePost(value)
 				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
 	gas: "200000" }, memo})
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgBuyName:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgCreatePost:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new Error('TxClient:MsgBuyName:Send Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgCreatePost:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -244,6 +279,21 @@ export default {
 				}
 			}
 		},
+		async sendMsgBuyName({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgBuyName(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgBuyName:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgBuyName:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
 		
 		async MsgDeleteName({ rootGetters }, { value }) {
 			try {
@@ -258,16 +308,16 @@ export default {
 				}
 			}
 		},
-		async MsgBuyName({ rootGetters }, { value }) {
+		async MsgCreatePost({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgBuyName(value)
+				const msg = await txClient.msgCreatePost(value)
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgBuyName:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgCreatePost:Init Could not initialize signing client. Wallet is required.')
 				} else{
-					throw new Error('TxClient:MsgBuyName:Create Could not create message: ' + e.message)
+					throw new Error('TxClient:MsgCreatePost:Create Could not create message: ' + e.message)
 				}
 			}
 		},
@@ -281,6 +331,19 @@ export default {
 					throw new Error('TxClient:MsgSetName:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgSetName:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgBuyName({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgBuyName(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgBuyName:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgBuyName:Create Could not create message: ' + e.message)
 				}
 			}
 		},
